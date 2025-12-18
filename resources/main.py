@@ -5,20 +5,28 @@ import random
 import numpy as np
 from tkinter import ttk
 import math
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 
 datos = None
 
 
+def volver(ventana_actual, ventana_anterior):
+    ventana_actual.destroy()
+    ventana_anterior.deiconify()
+
+
 ##Calculo MAS
 def calcula_mas():
-    calculo_mas = tk.Tk()
+    calculo_mas = tk.Toplevel(mas)
     calculo_mas.title("Cálculo por MAS")
     calculo_mas.geometry("1000x900")
     datos_mas = datos
     col_var = entrada_var.get()
     tamanio_muestra = int(entrada_tamanio.get())
     longitud_columna = len(datos_mas[col_var])
-    mas.destroy()
+    mas.withdraw()
     unidades_muestra = random.sample(range(1, longitud_columna + 1), tamanio_muestra)
     valores = np.array([datos_mas.iloc[i - 1][col_var] for i in unidades_muestra])
     suma = np.sum(valores)
@@ -83,12 +91,17 @@ def calcula_mas():
         anchor="w", pady=3
     )
     ##------------------
-    calculo_mas.mainloop()
+    boton_volver = tk.Button(
+        calculo_mas,
+        text="⬅ Regresar a especifícaciones MAS",
+        command=lambda: volver(calculo_mas, mas),
+    )
+    boton_volver.place(x=600, y=580)
 
 
 ##Calculo ER
 def calcula_er():
-    calculo_er = tk.Tk()
+    calculo_er = tk.Toplevel(er)
     calculo_er.title("Cálculo por Estimador Razón")
     calculo_er.geometry("1000x900")
     datos_er = datos
@@ -96,7 +109,7 @@ def calcula_er():
     col_var_aux = entrada_var_aux.get()
     tamanio_muestra = int(entrada_tamanio.get())
     longitud_columna = len(datos_er[col_var])
-    er.destroy()
+    er.withdraw()
     unidades_muestra = random.sample(range(1, longitud_columna + 1), tamanio_muestra)
     valores_prim = np.array([datos_er.iloc[i - 1][col_var] for i in unidades_muestra])
     valores_aux = np.array(
@@ -167,11 +180,16 @@ def calcula_er():
         anchor="w", pady=3
     )
     ##------------------
-    calculo_er.mainloop()
+    boton_volver = tk.Button(
+        calculo_er,
+        text="⬅ Regresar a especifícaciones ER",
+        command=lambda: volver(calculo_er, er),
+    )
+    boton_volver.place(x=600, y=580)
 
 
 def calcula_est():
-    calculo_est = tk.Tk()
+    calculo_est = tk.Toplevel()
     calculo_est.title("Cálculo por Estimador Razón")
     calculo_est.geometry("1000x900")
     datos_est = datos
@@ -182,7 +200,7 @@ def calcula_est():
     estratos = estratos = [
         x.strip() for x in entrada_estratos_cu.get().strip("()").split(",")
     ]
-    est.destroy()
+    est.withdraw()
     num_cada_est = []
     df_estratos = []
     for i in estratos:
@@ -285,94 +303,300 @@ def calcula_est():
         anchor="w", pady=3
     )
     ##------------------
-    calculo_est.mainloop()
+    boton_volver = tk.Button(
+        calculo_est,
+        text="⬅ Regresar a especifícaciones ESTRAT",
+        command=lambda: volver(calculo_est, est),
+    )
+    boton_volver.place(x=600, y=580)
+
+
+def calcula_comparativa():
+    comparativa_ven = tk.Toplevel(comparativ)
+    comparativa_ven.title("Cálculo por MAS")
+    comparativa_ven.geometry("1000x900")
+    datos_comp = datos
+    col_var = entrada_varc.get()
+    col_aux = entrada_varauxc.get()
+    longitud_columna = len(datos_comp[col_var])
+    num_unidades = 10
+    varianzas_mas = []
+    varianzas_er = []
+    unidades = []
+    comparativ.withdraw()
+    while num_unidades <= longitud_columna:
+        unidades_muestra = random.sample(range(1, longitud_columna + 1), num_unidades)
+        valores = np.array([datos_comp.iloc[i - 1][col_var] for i in unidades_muestra])
+        valores_aux = np.array(
+            [datos_comp.iloc[i - 1][col_aux] for i in unidades_muestra]
+        )
+        cuadrados_val = valores**2
+        cuadrados_aux = valores_aux**2
+        suma_cuad_val = np.sum(cuadrados_val)
+        suma_cuad_aux = np.sum(cuadrados_aux)
+        suma_val = np.sum(valores)
+        suma_aux = np.sum(valores_aux)
+        valor_cruz_er = valores * valores_aux
+        sum_valor_cruz_er = np.sum(valor_cruz_er)
+        r_chica = suma_val / suma_aux
+        s_cua_chic_er = (1 / (num_unidades - 1)) * (
+            suma_cuad_val
+            - (2 * r_chica * (sum_valor_cruz_er))
+            + ((r_chica**2) * suma_cuad_aux)
+        )
+        s_cua_chic_mas = (1 / (num_unidades - 1)) * (
+            suma_cuad_val - ((1 / num_unidades) * (suma_val**2))
+        )
+        est_var_prom_mas = (1 - (num_unidades / longitud_columna)) * (
+            s_cua_chic_mas / num_unidades
+        )
+        est_var_prom_er = (1 - (num_unidades / longitud_columna)) * (
+            s_cua_chic_er / num_unidades
+        )
+        unidades.append(num_unidades)
+        varianzas_mas.append(est_var_prom_mas)
+        varianzas_er.append(est_var_prom_er)
+        num_unidades = num_unidades + 4
+    fig = Figure(figsize=(8, 6), dpi=100)
+    ax = fig.add_subplot(111)
+    ax.plot(unidades, varianzas_mas, marker="o", label="Varianza MAS")
+    ax.plot(unidades, varianzas_er, marker="s", label="Varianza ER")
+    ax.set_xlabel("Número de unidades")
+    ax.set_ylabel("Varianza estimada")
+    ax.set_title("Comparación de Varianzas MAS vs ER")
+    ax.legend()
+    ax.grid(True)
+    canvas = FigureCanvasTkAgg(fig, master=comparativa_ven)
+    canvas.draw()
+    canvas.get_tk_widget().place(x=50, y=50)
+    boton_volver = tk.Button(
+        comparativa_ven,
+        text="⬅ Regresar a especifícaciones Comparativa",
+        command=lambda: volver(comparativa_ven, comparativ),
+    )
+    boton_volver.place(x=100, y=700)
+
+
+def calc_opt():
+    optimo_mue = tk.Toplevel(opt)
+    optimo_mue.title("Calculadora de número de unidades óptimo para la muestra")
+    optimo_mue.geometry("1000x900")
+
+    z = float(entrada_z.get())
+    s_cuadrada = float(entrada_var_est.get())
+    error_absoluto = float(entrada_err_abs.get())
+    tipo = (entrada_tipo.get()).upper
+    num_pob = float(entrada_num_datos.get())
+    if tipo == "PROMEDIO":
+        num_opt = 1 / (((error_absoluto**2) / ((z**2) * s_cuadrada)) + (1 / num_pob))
+    else:
+        num_opt = 1 / (
+            ((error_absoluto**2) / ((z**2) * s_cuadrada * (num_pob**2))) + (1 / num_pob)
+        )
+
+    numero_optimo = tk.Label(
+        optimo_mue, text=f"El número de unidades en muestra óptimo es: {num_opt}"
+    )
+    numero_optimo.place(x=20, y=40)
+
+    boton_volver = tk.Button(
+        optimo_mue,
+        text="⬅ Regresar a Selección método",
+        command=lambda: volver(optimo_mue, opt),
+    )
+    boton_volver.place(x=20, y=100)
 
 
 ##Ventana MAS
 def est_MAS():
     global entrada_var, entrada_tamanio, mas
-    segunda.destroy()
-    mas = tk.Tk()
+    mas = tk.Toplevel(segunda)
+    segunda.withdraw()
     mas.title("Estimación por MAS")
     mas.geometry("1000x900")
     label_titulo = tk.Label(mas, text="Estimación por Muestreo Aleatorio Simple")
     label_titulo.place(x=20, y=20)
     label_variable_est = tk.Label(mas, text="Nombre de Columna de Variable a estimar")
     label_variable_est.place(x=20, y=40)
-    entrada_var = tk.Entry()
+    entrada_var = tk.Entry(mas)
     entrada_var.place(x=320, y=40)
     label_tamanio_muestra = tk.Label(mas, text="Tamaño muestra")
     label_tamanio_muestra.place(x=20, y=60)
-    entrada_tamanio = tk.Entry()
+    entrada_tamanio = tk.Entry(mas)
     entrada_tamanio.place(x=320, y=60)
     boton_calcular = tk.Button(mas, text="Calcular", command=calcula_mas)
     boton_calcular.place(x=20, y=80)
-    mas.mainloop()
+    boton_volver = tk.Button(
+        mas, text="⬅ Regresar a Selección método", command=lambda: volver(mas, segunda)
+    )
+    boton_volver.place(x=20, y=120)
 
 
 ##Ventana ER
 def est_ER():
     global entrada_var, entrada_tamanio, entrada_var_aux, er
-    segunda.destroy()
-    er = tk.Tk()
+    er = tk.Toplevel(segunda)
+    segunda.withdraw()
     er.title("Estimación por Estimador de Razón")
     er.geometry("1000x900")
     label_titulo = tk.Label(er, text="Estimación por Estimador de Razón")
     label_titulo.place(x=20, y=20)
     label_variable_est = tk.Label(er, text="Nombre de Columna de Variable a estimar")
     label_variable_est.place(x=20, y=40)
-    entrada_var = tk.Entry()
+    entrada_var = tk.Entry(er)
     entrada_var.place(x=320, y=40)
     label_variable_aux = tk.Label(er, text="Nombre de Columna Variable auxiliar")
     label_variable_aux.place(x=20, y=60)
-    entrada_var_aux = tk.Entry()
+    entrada_var_aux = tk.Entry(er)
     entrada_var_aux.place(x=320, y=60)
     label_tamanio_muestra = tk.Label(er, text="Tamaño muestra")
     label_tamanio_muestra.place(x=20, y=80)
-    entrada_tamanio = tk.Entry()
+    entrada_tamanio = tk.Entry(er)
     entrada_tamanio.place(x=320, y=80)
     boton_calcular = tk.Button(er, text="Calcular", command=calcula_er)
     boton_calcular.place(x=20, y=100)
-    er.mainloop()
+    boton_volver = tk.Button(
+        er, text="⬅ Regresar a Selección método", command=lambda: volver(er, segunda)
+    )
+    boton_volver.place(x=20, y=140)
 
 
 ##Ventana EST
 def est_EST():
     global entrada_var, entrada_tamanio, entrada_est, est, entrada_estratos_cu
-    segunda.destroy()
-    est = tk.Tk()
+    est = tk.Toplevel(segunda)
+    segunda.withdraw()
     est.title("Estimación por Estratificación")
     est.geometry("1000x900")
     label_titulo = tk.Label(est, text="Estimación por Estratificación")
     label_titulo.place(x=20, y=20)
     label_variable_est = tk.Label(est, text="Nombre de Columna de Variable a estimar")
     label_variable_est.place(x=20, y=40)
-    entrada_var = tk.Entry()
+    entrada_var = tk.Entry(est)
     entrada_var.place(x=320, y=40)
     label_variable_est = tk.Label(est, text="Nombre de Columna con Estratos")
     label_variable_est.place(x=20, y=60)
-    entrada_est = tk.Entry()
+    entrada_est = tk.Entry(est)
     entrada_est.place(x=320, y=60)
     label_tamanio_muestra = tk.Label(est, text="Tamaño muestra")
     label_tamanio_muestra.place(x=20, y=80)
-    entrada_tamanio = tk.Entry()
+    entrada_tamanio = tk.Entry(est)
     entrada_tamanio.place(x=320, y=80)
     label_estratos_cu = tk.Label(
         est,
         text="¿Qué estratos hay? EJ. Si estratos estan en tabla como H hombre y M mujer (H,M)",
     )
     label_estratos_cu.place(x=20, y=100)
-    entrada_estratos_cu = tk.Entry()
+    entrada_estratos_cu = tk.Entry(est)
     entrada_estratos_cu.place(x=560, y=100)
     boton_calcular = tk.Button(est, text="Calcular", command=calcula_est)
     boton_calcular.place(x=20, y=140)
-    est.mainloop()
+    boton_volver = tk.Button(
+        est, text="⬅ Regresar a Selección método", command=lambda: volver(est, segunda)
+    )
+    boton_volver.place(x=20, y=180)
+
+
+##Ventana Comparativa
+def comparativa():
+    global comparativ, entrada_varc, entrada_varauxc
+    comparativ = tk.Toplevel(segunda)
+    segunda.withdraw()
+    comparativ.title("Comparativa Varianzas MAS vs ER")
+    comparativ.geometry("1000x900")
+    label_titulo = tk.Label(comparativ, text="Comparativa Varianzas MAS vs ER")
+    label_titulo.place(x=20, y=20)
+    label_variable_est = tk.Label(
+        comparativ, text="Nombre de Columna de Variable a estimar"
+    )
+    label_variable_est.place(x=20, y=40)
+    entrada_varc = tk.Entry(comparativ)
+    entrada_varc.place(x=320, y=40)
+    label_variable_aux = tk.Label(comparativ, text="Nombre Columna auxiliar (en ER)")
+    label_variable_aux.place(x=20, y=60)
+    entrada_varauxc = tk.Entry(comparativ)
+    entrada_varauxc.place(x=320, y=60)
+    boton_calcular = tk.Button(comparativ, text="Calcular", command=calcula_comparativa)
+    boton_calcular.place(x=20, y=80)
+    boton_volver = tk.Button(
+        comparativ,
+        text="⬅ Regresar a Selección método",
+        command=lambda: volver(comparativ, segunda),
+    )
+    boton_volver.place(x=20, y=120)
+
+
+##Ventana Calculadora Tamaño Muestra
+def optimo_muestra():
+    global opt, entrada_z, entrada_err_abs, entrada_tipo, entrada_num_datos, entrada_var_est
+    opt = tk.Toplevel(segunda)
+    segunda.withdraw()
+    opt.title("Calculadora de número de unidades en Muestra")
+    opt.geometry("1000x900")
+
+    frame = tk.Frame(opt)
+    frame.pack(anchor="center", pady=20)
+    style = ttk.Style()
+    style.configure("Compact.Treeview", font=("Arial", 9), rowheight=18)
+
+    columnas = ("nivel", "alpha", "z")
+    tabla = ttk.Treeview(
+        frame, columns=columnas, show="headings", height=5, style="Compact.Treeview"
+    )
+
+    tabla.heading("nivel", text="1 - α")
+    tabla.heading("alpha", text="α")
+    tabla.heading("z", text="Z")
+
+    tabla.column("nivel", anchor="center", width=90)
+    tabla.column("alpha", anchor="center", width=60)
+    tabla.column("z", anchor="center", width=60)
+
+    datos = [
+        (0.90, 0.10, 1.282),
+        (0.95, 0.05, 1.645),
+        (0.975, 0.025, 1.960),
+        (0.99, 0.01, 2.326),
+        (0.995, 0.005, 2.576),
+    ]
+
+    for fila in datos:
+        tabla.insert("", tk.END, values=fila)
+    tabla.pack(anchor="w")
+    label_err_abs = tk.Label(opt, text="Error absoluto")
+    label_err_abs.place(x=20, y=180)
+    entrada_err_abs = tk.Entry(opt)
+    entrada_err_abs.place(x=300, y=180)
+    label_varianza_est = tk.Label(opt, text="Varianza estimada de datos")
+    label_varianza_est.place(x=20, y=200)
+    entrada_var_est = tk.Entry(opt)
+    entrada_var_est.place(x=300, y=200)
+    label_num_datos = tk.Label(opt, text="Número unidades en población")
+    label_num_datos.place(x=20, y=220)
+    entrada_num_datos = tk.Entry(opt)
+    entrada_num_datos.place(x=300, y=220)
+    label_nivel_z = tk.Label(opt, text="Nivel confianza Z")
+    label_nivel_z.place(x=20, y=240)
+    entrada_z = tk.Entry(opt)
+    entrada_z.place(x=300, y=240)
+    label_tipo = tk.Label(opt, text="¿Para que estimación Total o Promedio?")
+    label_tipo.place(x=20, y=260)
+    entrada_tipo = tk.Entry(opt)
+    entrada_tipo.place(x=300, y=260)
+    boton_calc = tk.Button(opt, text="Calcular", command=calc_opt)
+    boton_calc.place(x=20, y=300)
+    boton_volver = tk.Button(
+        opt,
+        text="⬅ Regresar a Selección método",
+        command=lambda: volver(opt, segunda),
+    )
+    boton_volver.place(x=20, y=340)
 
 
 ##Ventana Secundaria
 def abrir_segunda_ven():
     global segunda
-    segunda = tk.Tk()
+    segunda = tk.Toplevel(root)
     segunda.title("Tipo de Estimación a usar")
     segunda.geometry("1000x900")
     label_archivo = tk.Label(segunda, text=f"Archivo cargado: {archivo.split('/')[-1]}")
@@ -390,12 +614,26 @@ def abrir_segunda_ven():
         segunda, text="Estimación por Estratificación", command=est_EST
     )
     boton_EST.place(x=420, y=60)
-    segunda.mainloop()
+    boton_comparativa = tk.Button(
+        segunda, text="Comparar Varianzas de MAS vs ER", command=comparativa
+    )
+    boton_comparativa.place(x=660, y=60)
+    boton_numopt = tk.Button(
+        segunda, text="Número de unidades en muestra óptimo", command=optimo_muestra
+    )
+    label_calc_num = tk.Label(
+        segunda, text="Calculadora de número de unidades óptima para muestra"
+    )
+    label_calc_num.place(x=20, y=90)
+    boton_numopt.place(x=20, y=120)
+    boton_volver = tk.Button(
+        segunda, text="⬅ Regresar a inicio", command=lambda: volver(segunda, root)
+    )
+    boton_volver.place(x=20, y=180)
 
 
 def selecciona_base():
     global datos, archivo
-    Tk().withdraw()
     archivo = filedialog.askopenfilename(
         title="Selecciona un archivo CSV o XLSX",
         filetypes=[("Archivos CSV", "*.csv"), ("Archivos Excel", "*.xlsx")],
@@ -406,7 +644,7 @@ def selecciona_base():
         datos = pd.read_csv(archivo)
     else:
         datos = pd.read_excel(archivo)
-    root.destroy()
+    root.withdraw()
     abrir_segunda_ven()
 
 
