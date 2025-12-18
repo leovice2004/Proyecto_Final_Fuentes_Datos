@@ -12,6 +12,10 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 datos = None
 
 
+def cerrar_todo():
+    root.destroy()  # cierra TODAS las ventanas y termina el programa
+
+
 def volver(ventana_actual, ventana_anterior):
     ventana_actual.destroy()
     ventana_anterior.deiconify()
@@ -97,6 +101,7 @@ def calcula_mas():
         command=lambda: volver(calculo_mas, mas),
     )
     boton_volver.place(x=600, y=580)
+    calculo_mas.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
 ##Calculo ER
@@ -186,6 +191,7 @@ def calcula_er():
         command=lambda: volver(calculo_er, er),
     )
     boton_volver.place(x=600, y=580)
+    calculo_er.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
 def calcula_est():
@@ -309,6 +315,7 @@ def calcula_est():
         command=lambda: volver(calculo_est, est),
     )
     boton_volver.place(x=600, y=580)
+    calculo_est.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
 def calcula_comparativa():
@@ -375,6 +382,7 @@ def calcula_comparativa():
         command=lambda: volver(comparativa_ven, comparativ),
     )
     boton_volver.place(x=100, y=700)
+    comparativa_ven.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
 def calc_opt():
@@ -387,6 +395,7 @@ def calc_opt():
     error_absoluto = float(entrada_err_abs.get())
     tipo = (entrada_tipo.get()).upper
     num_pob = float(entrada_num_datos.get())
+    opt.withdraw()
     if tipo == "PROMEDIO":
         num_opt = 1 / (((error_absoluto**2) / ((z**2) * s_cuadrada)) + (1 / num_pob))
     else:
@@ -405,6 +414,7 @@ def calc_opt():
         command=lambda: volver(optimo_mue, opt),
     )
     boton_volver.place(x=20, y=100)
+    optimo_mue.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
 ##Ventana MAS
@@ -430,6 +440,7 @@ def est_MAS():
         mas, text="⬅ Regresar a Selección método", command=lambda: volver(mas, segunda)
     )
     boton_volver.place(x=20, y=120)
+    mas.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
 ##Ventana ER
@@ -459,6 +470,7 @@ def est_ER():
         er, text="⬅ Regresar a Selección método", command=lambda: volver(er, segunda)
     )
     boton_volver.place(x=20, y=140)
+    er.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
 ##Ventana EST
@@ -495,6 +507,7 @@ def est_EST():
         est, text="⬅ Regresar a Selección método", command=lambda: volver(est, segunda)
     )
     boton_volver.place(x=20, y=180)
+    est.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
 ##Ventana Comparativa
@@ -524,6 +537,7 @@ def comparativa():
         command=lambda: volver(comparativ, segunda),
     )
     boton_volver.place(x=20, y=120)
+    comparativ.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
 ##Ventana Calculadora Tamaño Muestra
@@ -591,6 +605,7 @@ def optimo_muestra():
         command=lambda: volver(opt, segunda),
     )
     boton_volver.place(x=20, y=340)
+    opt.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
 ##Ventana Secundaria
@@ -630,6 +645,7 @@ def abrir_segunda_ven():
         segunda, text="⬅ Regresar a inicio", command=lambda: volver(segunda, root)
     )
     boton_volver.place(x=20, y=180)
+    segunda.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
 def selecciona_base():
