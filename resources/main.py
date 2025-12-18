@@ -7,7 +7,7 @@ from tkinter import ttk
 import math
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
+from itertools import combinations
 
 datos = None
 
@@ -417,6 +417,36 @@ def calc_opt():
     optimo_mue.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
+def dist_calc():
+    dist_calc = tk.Toplevel(distribucion)
+    dist_calc.geometry("1000x900")
+    dist_calc.title("Distribución")
+    datos_dist = datos
+    tamanio_muestra = int(taman.get())
+    columna = var.get()
+    distribucion.withdraw()
+    rango = range(1, len(datos[columna]) + 1)
+    proba_de_est = 1 / (math.comb(500, tamanio_muestra))
+    lista_est = []
+    for i in combinations(rango, tamanio_muestra):
+        lista_unidades = list(i)
+        valores = np.array([datos_dist.iloc[j - 1][columna] for j in lista_unidades])
+        suma_valores = np.sum(valores)
+        estimador_prom = suma_valores / tamanio_muestra
+        lista_est.append(estimador_prom)
+    est_num = []
+    for est in lista_est:
+        num_veces = lista_est.count(est)
+        est_num.append([est, num_veces])
+
+    boton_volver = tk.Button(
+        dist_calc,
+        text="⬅ Regresar a Selección método",
+        command=lambda: volver(dist_calc, distribucion),
+    )
+    boton_volver.place(x=20, y=2000)
+
+
 ##Ventana MAS
 def est_MAS():
     global entrada_var, entrada_tamanio, mas
@@ -608,6 +638,37 @@ def optimo_muestra():
     opt.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
+def distribucion():
+    global distribucion, var, taman
+    distribucion = tk.Toplevel(segunda)
+    segunda.withdraw()
+    distribucion.title("Distribución de muestra para estimador ")
+    distribucion.geometry("1000x900")
+    label_titulo = tk.Label(
+        distribucion, text="Distribución de muestra para estimador de promedio"
+    )
+    label_titulo.place(x=20, y=20)
+    label_variable_est = tk.Label(
+        distribucion, text="Nombre de Columna de Variable a estimar"
+    )
+    label_variable_est.place(x=20, y=40)
+    var = tk.Entry(distribucion)
+    var.place(x=300, y=40)
+    label_tamanio_muestra = tk.Label(distribucion, text="Tamaño muestra")
+    label_tamanio_muestra.place(x=20, y=60)
+    taman = tk.Entry(distribucion)
+    taman.place(x=300, y=60)
+    boton_calc = tk.Button(distribucion, text="Calcular", command=dist_calc)
+    boton_calc.place(x=20, y=150)
+    boton_volver = tk.Button(
+        distribucion,
+        text="⬅ Regresar a Selección método",
+        command=lambda: volver(distribucion, segunda),
+    )
+    boton_volver.place(x=20, y=2000)
+    distribucion.protocol("WM_DELETE_WINDOW", cerrar_todo)
+
+
 ##Ventana Secundaria
 def abrir_segunda_ven():
     global segunda
@@ -636,11 +697,17 @@ def abrir_segunda_ven():
     boton_numopt = tk.Button(
         segunda, text="Número de unidades en muestra óptimo", command=optimo_muestra
     )
+    boton_numopt.place(x=20, y=120)
     label_calc_num = tk.Label(
         segunda, text="Calculadora de número de unidades óptima para muestra"
     )
     label_calc_num.place(x=20, y=90)
-    boton_numopt.place(x=20, y=120)
+    boton_distribucion = tk.Button(
+        segunda,
+        text="Distribución de estimación por tamaño de muestra",
+        command=distribucion,
+    )
+    boton_distribucion.place(x=350, y=120)
     boton_volver = tk.Button(
         segunda, text="⬅ Regresar a inicio", command=lambda: volver(segunda, root)
     )
