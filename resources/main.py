@@ -740,6 +740,8 @@ def selecciona_base():
         datos = pd.read_csv(archivo)
     else:
         datos = pd.read_excel(archivo)
+    if "Id" not in datos.columns:
+        datos.insert(0, "Id", range(1, len(datos) + 1))
     root.withdraw()
     abrir_segunda_ven()
 
