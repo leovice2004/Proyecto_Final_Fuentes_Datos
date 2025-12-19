@@ -24,4 +24,5 @@ COPY demograficos_2025.csv .
 
 EXPOSE 5900
 
-CMD sh -c "Xvfb :1 -screen 0 1024x768x24 & x11vnc -display :1 -nopw -forever & python main.py"
+CMD sh -c "Xvfb :1 -screen 0 1024x768x24 & export DISPLAY=:1 && x11vnc -display :1 -nopw -forever & python main.py"
+
