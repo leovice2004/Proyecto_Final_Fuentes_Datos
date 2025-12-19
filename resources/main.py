@@ -334,7 +334,9 @@ def calcula_comparativa():
     while num_unidades <= longitud_columna:
         unidades_muestra = random.sample(range(1, longitud_columna + 1), num_unidades)
         valores = np.array([datos_comp.iloc[i - 1][col_var] for i in unidades_muestra])
-        valores_aux = np.array([datos_comp.iloc[i][col_aux] for i in unidades_muestra])
+        valores_aux = np.array(
+            [datos_comp.iloc[i - 1][col_aux] for i in unidades_muestra]
+        )
         cuadrados_val = valores**2
         cuadrados_aux = valores_aux**2
         suma_cuad_val = np.sum(cuadrados_val)
