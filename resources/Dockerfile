@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     libxtst6 \
     libxi6 \
+    xvfb \
+    x11vnc \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -20,5 +22,6 @@ COPY resources/student_habits.xlsx .
 COPY resources/main.py .
 COPY resources/demograficos_2025.csv .
 
-ENV DISPLAY=:0
-CMD ["python", "main.py"]
+EXPOSE 5900
+
+CMD sh -c "Xvfb :1 -screen 0 1024x768x24 & x11vnc -display :1 -nopw -forever & python main.py"
