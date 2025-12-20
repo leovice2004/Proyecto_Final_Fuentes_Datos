@@ -691,43 +691,129 @@ def abrir_segunda_ven():
     segunda = tk.Toplevel(root)
     segunda.title("Tipo de Estimación a usar")
     segunda.geometry("1000x900")
-    label_archivo = tk.Label(segunda, text=f"Archivo cargado: {archivo.split('/')[-1]}")
-    label_archivo.place(x=20, y=20)
+    segunda.configure(bg="#f0f4f8")
+    
+    # Frame para el header
+    header_frame = tk.Frame(segunda, bg="#34495e", height=100)
+    header_frame.pack(fill="x", pady=(0, 30))
+    
+    # Título en el header
+    titulo_header = tk.Label(
+        header_frame,
+        text="Métodos de Estimación",
+        font=("Arial", 24, "bold"),
+        bg="#34495e",
+        fg="white"
+    )
+    titulo_header.pack(pady=15)
+    
+    # Información del archivo cargado
+    label_archivo = tk.Label(
+        header_frame,
+        text=f"📄 Archivo: {archivo.split('/')[-1]}",
+        font=("Arial", 11),
+        bg="#34495e",
+        fg="#ecf0f1"
+    )
+    label_archivo.pack()
+    
+    # Frame principal para los botones
+    frame_botones = tk.Frame(segunda, bg="#f0f4f8")
+    frame_botones.pack(expand=True, fill="both", padx=40, pady=20)
+    
+    # Instrucción
     label_estrteg = tk.Label(
-        segunda,
-        text="Selecciona a través de que método quieres realizar la estimación estadística",
+        frame_botones,
+        text="Selecciona el método de estimación estadística que deseas utilizar:",
+        font=("Arial", 14),
+        bg="#f0f4f8",
+        fg="#2c3e50"
     )
-    label_estrteg.place(x=20, y=40)
-    boton_MAS = tk.Button(segunda, text="Estimación por MAS", command=est_MAS)
-    boton_MAS.place(x=20, y=60)
-    boton_ER = tk.Button(segunda, text="Estimación por Estimador Razón", command=est_ER)
-    boton_ER.place(x=180, y=60)
-    boton_EST = tk.Button(
-        segunda, text="Estimación por Estratificación", command=est_EST
+    label_estrteg.pack(pady=(0, 30))
+    
+    # Frame para botones principales (primera fila)
+    frame_principal = tk.Frame(frame_botones, bg="#f0f4f8")
+    frame_principal.pack(pady=10)
+    
+    # Estilo para botones principales
+    def crear_boton_principal(parent, text, command, color="#3498db"):
+        btn = tk.Button(
+            parent,
+            text=text,
+            command=command,
+            font=("Arial", 12, "bold"),
+            bg=color,
+            fg="white",
+            activebackground=color,
+            activeforeground="white",
+            relief="flat",
+            padx=20,
+            pady=15,
+            cursor="hand2",
+            borderwidth=0,
+            width=25
+        )
+        btn.bind("<Enter>", lambda e, b=btn, c=color: b.config(bg="#2980b9"))
+        btn.bind("<Leave>", lambda e, b=btn, c=color: b.config(bg=color))
+        return btn
+    
+    # Botones principales
+    boton_MAS = crear_boton_principal(frame_principal, "📊 MAS\nMuestreo Aleatorio Simple", est_MAS, "#3498db")
+    boton_MAS.grid(row=0, column=0, padx=10, pady=10)
+    
+    boton_ER = crear_boton_principal(frame_principal, "📈 Estimador Razón", est_ER, "#2ecc71")
+    boton_ER.grid(row=0, column=1, padx=10, pady=10)
+    
+    boton_EST = crear_boton_principal(frame_principal, "📋 Estratificación", est_EST, "#9b59b6")
+    boton_EST.grid(row=0, column=2, padx=10, pady=10)
+    
+    # Frame para botones secundarios
+    frame_secundario = tk.Frame(frame_botones, bg="#f0f4f8")
+    frame_secundario.pack(pady=20)
+    
+    # Separador visual
+    separador = tk.Frame(frame_botones, bg="#bdc3c7", height=2)
+    separador.pack(fill="x", pady=20)
+    
+    label_herramientas = tk.Label(
+        frame_botones,
+        text="Herramientas Adicionales:",
+        font=("Arial", 14, "bold"),
+        bg="#f0f4f8",
+        fg="#2c3e50"
     )
-    boton_EST.place(x=420, y=60)
-    boton_comparativa = tk.Button(
-        segunda, text="Comparar Varianzas de MAS vs ER", command=comparativa
-    )
-    boton_comparativa.place(x=660, y=60)
-    boton_numopt = tk.Button(
-        segunda, text="Número de unidades en muestra óptimo", command=optimo_muestra
-    )
-    boton_numopt.place(x=20, y=120)
-    label_calc_num = tk.Label(
-        segunda, text="Calculadora de número de unidades óptima para muestra"
-    )
-    label_calc_num.place(x=20, y=90)
-    boton_distribucion = tk.Button(
-        segunda,
-        text="Distribución de estimación por tamaño de muestra",
-        command=distribucion,
-    )
-    boton_distribucion.place(x=350, y=120)
+    label_herramientas.pack(pady=(10, 15))
+    
+    # Frame para herramientas
+    frame_herramientas = tk.Frame(frame_botones, bg="#f0f4f8")
+    frame_herramientas.pack()
+    
+    boton_comparativa = crear_boton_principal(frame_herramientas, "⚖️ Comparar Varianzas\nMAS vs ER", comparativa, "#e67e22")
+    boton_comparativa.grid(row=0, column=0, padx=10, pady=10)
+    
+    boton_numopt = crear_boton_principal(frame_herramientas, "🎯 Tamaño Óptimo\nde Muestra", optimo_muestra, "#1abc9c")
+    boton_numopt.grid(row=0, column=1, padx=10, pady=10)
+    
+    boton_distribucion = crear_boton_principal(frame_herramientas, "📉 Distribución\nde Estimación", distribucion, "#e74c3c")
+    boton_distribucion.grid(row=0, column=2, padx=10, pady=10)
+    
+    # Botón volver
     boton_volver = tk.Button(
-        segunda, text="⬅ Regresar a inicio", command=lambda: volver(segunda, root)
+        frame_botones,
+        text="⬅ Regresar a inicio",
+        command=lambda: volver(segunda, root),
+        font=("Arial", 11),
+        bg="#95a5a6",
+        fg="white",
+        activebackground="#7f8c8d",
+        activeforeground="white",
+        relief="flat",
+        padx=20,
+        pady=10,
+        cursor="hand2"
     )
-    boton_volver.place(x=20, y=180)
+    boton_volver.pack(pady=30)
+    
     segunda.protocol("WM_DELETE_WINDOW", cerrar_todo)
 
 
@@ -753,8 +839,79 @@ def selecciona_base():
 root = tk.Tk()
 root.title("Calculadora estadística")
 root.geometry("1000x900")
-etiqueta_sele = tk.Label(root, text="Selecciona Base de Datos a analizar")
-etiqueta_sele.place(x=20, y=20)
-boton_selec = tk.Button(root, text="Seleccionar", command=selecciona_base)
-boton_selec.place(x=100, y=100)
+root.configure(bg="#f0f4f8")  # Fondo azul claro
+
+# Frame principal centrado
+frame_principal = tk.Frame(root, bg="#f0f4f8")
+frame_principal.place(relx=0.5, rely=0.5, anchor="center")
+
+# Título principal grande y destacado
+titulo_principal = tk.Label(
+    frame_principal,
+    text="📊 Calculadora Estadística",
+    font=("Arial", 32, "bold"),
+    bg="#f0f4f8",
+    fg="#2c3e50"
+)
+titulo_principal.pack(pady=(0, 20))
+
+# Subtítulo
+subtitulo = tk.Label(
+    frame_principal,
+    text="Herramienta de Análisis de Muestreo",
+    font=("Arial", 16),
+    bg="#f0f4f8",
+    fg="#7f8c8d"
+)
+subtitulo.pack(pady=(0, 40))
+
+# Etiqueta de instrucción
+etiqueta_sele = tk.Label(
+    frame_principal,
+    text="Selecciona Base de Datos a analizar",
+    font=("Arial", 14),
+    bg="#f0f4f8",
+    fg="#34495e"
+)
+etiqueta_sele.pack(pady=(0, 30))
+
+# Botón moderno y atractivo
+boton_selec = tk.Button(
+    frame_principal,
+    text="📁 Seleccionar Archivo",
+    command=selecciona_base,
+    font=("Arial", 16, "bold"),
+    bg="#3498db",
+    fg="white",
+    activebackground="#2980b9",
+    activeforeground="white",
+    relief="flat",
+    padx=40,
+    pady=15,
+    cursor="hand2",
+    borderwidth=0,
+    highlightthickness=0
+)
+boton_selec.pack(pady=10)
+
+# Efecto hover para el botón
+def on_enter(e):
+    boton_selec.config(bg="#2980b9")
+
+def on_leave(e):
+    boton_selec.config(bg="#3498db")
+
+boton_selec.bind("<Enter>", on_enter)
+boton_selec.bind("<Leave>", on_leave)
+
+# Información adicional
+info_label = tk.Label(
+    frame_principal,
+    text="Soporta archivos CSV y XLSX",
+    font=("Arial", 11),
+    bg="#f0f4f8",
+    fg="#95a5a6"
+)
+info_label.pack(pady=(30, 0))
+
 root.mainloop()
