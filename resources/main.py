@@ -363,7 +363,7 @@ def calcula_comparativa():
         unidades.append(num_unidades)
         varianzas_mas.append(est_var_prom_mas)
         varianzas_er.append(est_var_prom_er)
-        num_unidades = num_unidades + 4
+        num_unidades = num_unidades**2
     fig = Figure(figsize=(8, 6), dpi=100)
     ax = fig.add_subplot(111)
     ax.plot(unidades, varianzas_mas, marker="o", label="Varianza MAS")
